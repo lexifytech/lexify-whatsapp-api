@@ -1,14 +1,20 @@
 # Estágio de build
 FROM node:22.11.0-alpine AS build
 
+# Adiciona dependências necessárias para compilação nativa
+RUN apk add --no-cache python3 make g++
+
+# Configura npm para evitar problemas de memória
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
 WORKDIR /app
 
 # Copia os arquivos de configuração
 COPY package*.json ./
 COPY tsconfig*.json ./
 
-# Instala as dependências
-RUN npm ci
+# Usa npm install em vez de npm ci para maior estabilidade
+RUN npm install
 
 # Copia o código fonte
 COPY src/ ./src/
@@ -28,8 +34,8 @@ ENV NODE_ENV=production
 COPY --from=build /app/package*.json ./
 COPY --from=build /app/dist/ ./dist/
 
-# Instala apenas as dependências de produção
-RUN npm ci --only=production
+# Usa npm install em vez de npm ci para maior estabilidade
+RUN npm install --omit=dev
 
 # Cria diretório para armazenar as sessões do WhatsApp
 RUN mkdir -p /app/sessions
