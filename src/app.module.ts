@@ -1,7 +1,13 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { WhatsappModule } from './whatsapp/whatsapp.module';
 
 @Module({
-  imports: [WhatsappModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    WhatsappModule
+  ],
 })
 export class AppModule {}
