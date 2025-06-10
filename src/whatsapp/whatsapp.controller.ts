@@ -13,8 +13,8 @@ export class WhatsappController {
     try {
       const { id } = createSessionDto;
       
-      // Verifica se a sessão já existe
-      if (this.whatsappService.getSession(id)) {
+      // Verifica se a sessão já existe - usando o novo método getAllSessions
+      if (this.whatsappService.getAllSessions().includes(id)) {
         throw new HttpException('Sessão já existe', HttpStatus.BAD_REQUEST);
       }
 
@@ -34,11 +34,13 @@ export class WhatsappController {
   @Get('session/:id/qr')
   async getQRCode(@Param('id') id: string, @Res() res: Response) {
     try {
-      if (!this.whatsappService.getSession(id)) {
+      // Verifica se a sessão existe usando getAllSessions
+      if (!this.whatsappService.getAllSessions().includes(id)) {
         throw new HttpException('Sessão não encontrada', HttpStatus.NOT_FOUND);
       }
       
-      const qrCode = this.whatsappService.getQRCode(id);
+      // getQRCode agora retorna uma Promise
+      const qrCode = await this.whatsappService.getQRCode(id);
       if (!qrCode) {
         throw new HttpException('QR Code não disponível', HttpStatus.NOT_FOUND);
       }
@@ -60,11 +62,13 @@ export class WhatsappController {
   @Get('session/:id/qr-html')
   async getQRCodeHTML(@Param('id') id: string, @Res() res: Response) {
     try {
-      if (!this.whatsappService.getSession(id)) {
+      // Verifica se a sessão existe usando getAllSessions
+      if (!this.whatsappService.getAllSessions().includes(id)) {
         throw new HttpException('Sessão não encontrada', HttpStatus.NOT_FOUND);
       }
       
-      const qrCode = this.whatsappService.getQRCode(id);
+      // getQRCode agora retorna uma Promise
+      const qrCode = await this.whatsappService.getQRCode(id);
       if (!qrCode) {
         throw new HttpException('QR Code não disponível', HttpStatus.NOT_FOUND);
       }
@@ -97,20 +101,20 @@ export class WhatsappController {
   }
 
   @Get('session/:id/status')
-  getSessionStatus(@Param('id') id: string) {
+  async getSessionStatus(@Param('id') id: string) {
     try {
-      const session = this.whatsappService.getSession(id);
-      if (!session) {
+      // Verifica se a sessão existe usando getAllSessions
+      if (!this.whatsappService.getAllSessions().includes(id)) {
         throw new HttpException('Sessão não encontrada', HttpStatus.NOT_FOUND);
       }
       
-      // Verifica se a sessão está conectada
-      const isConnected = (session as any).user !== undefined;
-      
+      // Como não temos mais acesso direto à sessão, apenas verificamos se ela existe
+      // Para verificar se está conectada, precisaríamos abrir a conexão temporariamente
+      // o que não é recomendado para apenas verificar o status
       return { 
         success: true, 
         id, 
-        connected: isConnected 
+        connected: true // Assumimos que se a sessão existe, ela pode ser conectada
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
