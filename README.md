@@ -1,7 +1,7 @@
 Conecta na VPS
 - git pull
 - sudo npm i
-- sudo npm run build
+- sudo sudo npm run build
 - pm2 start ecosystem.config.js
 - pm2 restart lexify-whatsapp-api
 - pm2 startup
