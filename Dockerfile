@@ -1,11 +1,11 @@
 # Estágio de build
-FROM node:22.11.0-alpine AS build
+FROM node:18-alpine AS build
 
 # Adiciona dependências necessárias para compilação nativa
-RUN apk add --no-cache python3 make g++
+RUN apk add --no-cache python3 make g++ git
 
 # Configura npm para evitar problemas de memória
-ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 
 WORKDIR /app
 
@@ -14,16 +14,17 @@ COPY package*.json ./
 COPY tsconfig*.json ./
 
 # Usa npm install em vez de npm ci para maior estabilidade
-RUN npm install
+RUN npm install --no-fund --no-audit
 
 # Copia o código fonte
 COPY src/ ./src/
+COPY nest-cli.json ./
 
 # Compila o projeto
 RUN npm run build
 
 # Estágio de produção
-FROM node:22.11.0-alpine AS production
+FROM node:18-alpine AS production
 
 WORKDIR /app
 
@@ -35,7 +36,7 @@ COPY --from=build /app/package*.json ./
 COPY --from=build /app/dist/ ./dist/
 
 # Usa npm install em vez de npm ci para maior estabilidade
-RUN npm install --omit=dev
+RUN npm install --omit=dev --no-fund --no-audit
 
 # Cria diretório para armazenar as sessões do WhatsApp
 RUN mkdir -p /app/sessions
