@@ -1,5 +1,5 @@
 # Estágio de build
-FROM node:18-alpine AS build
+FROM node:22-alpine AS build
 
 # Configura npm para evitar problemas de memória
 ENV NODE_OPTIONS="--max-old-space-size=2048"
@@ -21,7 +21,7 @@ COPY nest-cli.json ./
 RUN npm run build
 
 # Estágio de produção
-FROM node:18-alpine AS production
+FROM node:22-alpine AS production
 
 WORKDIR /app
 
