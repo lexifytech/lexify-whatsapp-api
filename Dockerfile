@@ -1,9 +1,6 @@
 # Estágio de build
 FROM node:18-alpine AS build
 
-# Adiciona dependências necessárias para compilação nativa
-RUN apk add --no-cache python3 make g++ git
-
 # Configura npm para evitar problemas de memória
 ENV NODE_OPTIONS="--max-old-space-size=2048"
 
