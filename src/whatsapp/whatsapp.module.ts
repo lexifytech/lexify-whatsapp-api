@@ -9,8 +9,6 @@ import { AuthMiddleware } from '../auth/auth.middleware';
 })
 export class WhatsappModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(AuthMiddleware)
-      .forRoutes(WhatsappController);
+    consumer.apply(AuthMiddleware).forRoutes(WhatsappController);
   }
 }

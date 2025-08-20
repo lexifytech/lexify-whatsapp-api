@@ -7,7 +7,7 @@ import { WhatsappModule } from './whatsapp/whatsapp.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    WhatsappModule
+    WhatsappModule,
   ],
 })
 export class AppModule {}

@@ -1,4 +1,14 @@
-import { Controller, Post, Get, Delete, Body, Param, Res, HttpStatus, HttpException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Delete,
+  Body,
+  Param,
+  Res,
+  HttpStatus,
+  HttpException,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { WhatsappService } from './whatsapp.service';
 import { CreateSessionDto, SendMessageDto } from './interfaces/message.dto';
@@ -12,7 +22,7 @@ export class WhatsappController {
   async createSession(@Body() createSessionDto: CreateSessionDto) {
     try {
       const { id } = createSessionDto;
-      
+
       // Verifica se a sessão já existe
       if (this.whatsappService.getSession(id)) {
         throw new HttpException('Sessão já existe', HttpStatus.BAD_REQUEST);
@@ -20,14 +30,15 @@ export class WhatsappController {
 
       // Cria a sessão
       await this.whatsappService.createSession(id);
-      
-      return { 
-        success: true, 
-        message: 'Sessão criada com sucesso', 
-        id 
+
+      return {
+        success: true,
+        message: 'Sessão criada com sucesso',
+        id,
       };
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (error: unknown) {
+      const err = error as Error;
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -37,23 +48,24 @@ export class WhatsappController {
       if (!this.whatsappService.getSession(id)) {
         throw new HttpException('Sessão não encontrada', HttpStatus.NOT_FOUND);
       }
-      
+
       const qrCode = this.whatsappService.getQRCode(id);
       if (!qrCode) {
         throw new HttpException('QR Code não disponível', HttpStatus.NOT_FOUND);
       }
-      
+
       // Gera a imagem do QR code a partir do texto
       const qrImageDataUrl = await QRCode.toDataURL(qrCode);
-      
+
       // Configura o cabeçalho para imagem
       res.setHeader('Content-Type', 'image/png');
-      
+
       // Converte o Data URL para buffer e envia como resposta
       const qrImageBuffer = Buffer.from(qrImageDataUrl.split(',')[1], 'base64');
       return res.send(qrImageBuffer);
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      const err = error as Error;
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -63,15 +75,15 @@ export class WhatsappController {
       if (!this.whatsappService.getSession(id)) {
         throw new HttpException('Sessão não encontrada', HttpStatus.NOT_FOUND);
       }
-      
+
       const qrCode = this.whatsappService.getQRCode(id);
       if (!qrCode) {
         throw new HttpException('QR Code não disponível', HttpStatus.NOT_FOUND);
       }
-      
+
       // Gera a imagem do QR code a partir do texto
       const qrImageDataUrl = await QRCode.toDataURL(qrCode);
-      
+
       // Retorna uma página HTML com a imagem do QR code
       return res.send(`
         <!DOCTYPE html>
@@ -92,7 +104,8 @@ export class WhatsappController {
         </html>
       `);
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      const err = error as Error;
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -103,17 +116,19 @@ export class WhatsappController {
       if (!session) {
         throw new HttpException('Sessão não encontrada', HttpStatus.NOT_FOUND);
       }
-      
+
       // Verifica se a sessão está conectada
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       const isConnected = (session as any).user !== undefined;
-      
-      return { 
-        success: true, 
-        id, 
-        connected: isConnected 
+
+      return {
+        success: true,
+        id,
+        connected: isConnected,
       };
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      const err = error as Error;
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -121,16 +136,21 @@ export class WhatsappController {
   async sendMessage(@Body() sendMessageDto: SendMessageDto) {
     try {
       const { sessionId, to, text } = sendMessageDto;
-      
-      const result = await this.whatsappService.sendMessage(sessionId, to, text);
-      
-      return { 
-        success: true, 
-        message: 'Mensagem enviada com sucesso', 
-        messageId: result.key.id 
+
+      const result = await this.whatsappService.sendMessage(
+        sessionId,
+        to,
+        text,
+      );
+
+      return {
+        success: true,
+        message: 'Mensagem enviada com sucesso',
+        messageId: result.key.id,
       };
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      const err = error as Error;
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -140,7 +160,8 @@ export class WhatsappController {
       const activeSessions = this.whatsappService.getAllSessions();
       return { success: true, sessions: activeSessions };
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      const err = error as Error;
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -150,7 +171,8 @@ export class WhatsappController {
       await this.whatsappService.deleteSession(id);
       return { success: true, message: 'Sessão encerrada com sucesso' };
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      const err = error as Error;
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }
